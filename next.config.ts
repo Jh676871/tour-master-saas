@@ -1,19 +1,10 @@
 import type { NextConfig } from "next";
 
-const withPWA = require("@ducanh2912/next-pwa").default({
-  dest: "public",
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
-  reloadOnOnline: true,
-  swcMinify: true,
-  disable: process.env.NODE_ENV === "development", // Disable PWA in development
-  workboxOptions: {
-    disableDevLogs: true,
-  },
-});
-
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* 這裡加入 turbopack 設定來修復編譯錯誤 */
+  turbopack: {}, 
+  
+  /* 如果你原本有其他設定，請保留在下面 */
 };
 
-export default withPWA(nextConfig);
+export default nextConfig;
