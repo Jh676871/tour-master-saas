@@ -1,6 +1,6 @@
 'use client'
 
-import { Car, Wifi, MapPin, Phone, Copy, Check, BedDouble } from 'lucide-react'
+import { Car, Wifi, MapPin, Phone, Copy, Check, BedDouble, ImageIcon } from 'lucide-react'
 import { useState } from 'react'
 
 interface HotelViewProps {
@@ -10,17 +10,32 @@ interface HotelViewProps {
   hotelImage?: string
   roomNumber?: string
   hotelPhone?: string
+  wifiSsid?: string
+  wifiPassword?: string
+  images?: string[]
 }
 
-export function HotelView({ hotelName, hotelAddress, hotelMapUrl, hotelImage, roomNumber, hotelPhone }: HotelViewProps) {
-  const [copied, setCopied] = useState(false)
+export function HotelView({ 
+  hotelName, 
+  hotelAddress, 
+  hotelMapUrl, 
+  hotelImage, 
+  roomNumber, 
+  hotelPhone,
+  wifiSsid,
+  wifiPassword,
+  images
+}: HotelViewProps) {
+  const [copiedWifi, setCopiedWifi] = useState(false)
   const [taxiMode, setTaxiMode] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
-  const handleCopyWifi = () => {
-    // Mock wifi copy
-    navigator.clipboard.writeText('Hotel_Guest_WiFi')
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleCopyWifiPassword = () => {
+    if (wifiPassword) {
+      navigator.clipboard.writeText(wifiPassword)
+      setCopiedWifi(true)
+      setTimeout(() => setCopiedWifi(false), 2000)
+    }
   }
 
   const handleCall = () => {
@@ -31,6 +46,13 @@ export function HotelView({ hotelName, hotelAddress, hotelMapUrl, hotelImage, ro
     }
   }
 
+  // Combine primary image with additional images
+  const allImages = [
+    ...(hotelImage ? [hotelImage] : []),
+    ...(images || [])
+  ].filter(Boolean)
+
+  const displayImage = selectedImage || allImages[0]
 
   // Immersive Taxi Mode Overlay
   if (taxiMode) {
@@ -70,8 +92,8 @@ export function HotelView({ hotelName, hotelAddress, hotelMapUrl, hotelImage, ro
       {/* Hotel Info Header */}
       <div className="bg-white rounded-[2rem] overflow-hidden shadow-lg shadow-slate-200/50 relative group">
         <div className="h-64 bg-slate-200 relative">
-          {hotelImage ? (
-            <img src={hotelImage} alt={hotelName} className="w-full h-full object-cover" />
+          {displayImage ? (
+            <img src={displayImage} alt={hotelName} className="w-full h-full object-cover transition-opacity duration-300" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-100">
               <BedDouble className="w-16 h-16" />
@@ -97,70 +119,88 @@ export function HotelView({ hotelName, hotelAddress, hotelMapUrl, hotelImage, ro
                 <span className="font-bold text-slate-600 text-sm">撥打電話</span>
             </button>
             <button 
-                onClick={handleCopyWifi}
+                onClick={() => setTaxiMode(true)}
                 className="flex items-center justify-center gap-2 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors"
             >
-                <Wifi className="w-5 h-5 text-[#4F46E5]" />
-                <span className="font-bold text-slate-600 text-sm">{copied ? '已複製' : '複製 WiFi'}</span>
+                <Car className="w-5 h-5 text-[#4F46E5]" />
+                <span className="font-bold text-slate-600 text-sm">計程車卡</span>
             </button>
         </div>
       </div>
 
-      {/* Room Card */}
-      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex items-center justify-between">
-         <div>
-           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">我的房號</p>
-           <p className="text-4xl font-black text-indigo-600 tracking-tighter">{roomNumber || '--'}</p>
-         </div>
-         <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
-            <BedDouble className="w-6 h-6" />
-         </div>
-      </div>
-
-      {/* Taxi Mode Trigger */}
-      <button 
-        onClick={() => setTaxiMode(true)}
-        className="w-full bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-black py-5 rounded-[2rem] shadow-lg shadow-yellow-400/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all"
-      >
-        <div className="w-8 h-8 bg-black/10 rounded-full flex items-center justify-center">
-          <Car className="w-4 h-4" />
+      {/* Image Gallery */}
+      {allImages.length > 1 && (
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+          {allImages.map((img, idx) => (
+            <button
+              key={idx}
+              onClick={() => setSelectedImage(img)}
+              className={`relative flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all ${
+                displayImage === img ? 'border-[#4F46E5] ring-2 ring-[#4F46E5]/20' : 'border-transparent'
+              }`}
+            >
+              <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
         </div>
-        <span className="text-lg">開啟計程車助手 (全螢幕)</span>
-      </button>
+      )}
 
       {/* WiFi Card */}
-      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600">
-            <Wifi className="w-5 h-5" />
+      {(wifiSsid || wifiPassword) && (
+        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+              <Wifi className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900">飯店 WiFi</h3>
+              <p className="text-sm text-slate-500">點擊複製密碼</p>
+            </div>
           </div>
-          <h3 className="text-lg font-bold text-slate-900">飯店 WiFi</h3>
-        </div>
-        
-        <div className="space-y-3">
-          <button 
-            onClick={handleCopyWifi}
-            className="w-full flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-indigo-50 active:border-indigo-100 transition-all group"
-          >
-            <div className="text-left">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Wi-Fi Name</p>
-              <p className="font-mono font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">Hotel_Guest</p>
-            </div>
-            {copied ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5 text-slate-300 group-hover:text-indigo-500" />}
-          </button>
           
-          <button 
-            onClick={() => {}}
-            className="w-full flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-indigo-50 active:border-indigo-100 transition-all group"
-          >
-            <div className="text-left">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Password</p>
-              <p className="font-mono font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">guest1234</p>
-            </div>
-            <Copy className="w-5 h-5 text-slate-300 group-hover:text-indigo-500" />
-          </button>
+          <div className="space-y-3">
+            {wifiSsid && (
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">SSID</span>
+                <span className="font-medium text-slate-900">{wifiSsid}</span>
+              </div>
+            )}
+            
+            {wifiPassword && (
+              <button 
+                onClick={handleCopyWifiPassword}
+                className="w-full flex items-center justify-between p-3 bg-blue-50 hover:bg-blue-100 text-blue-900 rounded-xl transition-colors relative overflow-hidden group"
+              >
+                <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">Password</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold font-mono text-lg">{wifiPassword}</span>
+                  {copiedWifi ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Copy className="w-4 h-4 opacity-50 group-hover:opacity-100" />
+                  )}
+                </div>
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Room Info */}
+      {roomNumber && (
+        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+              <BedDouble className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900">你的房號</h3>
+              <p className="text-sm text-slate-500">Room Number</p>
+            </div>
+          </div>
+          <span className="text-3xl font-black text-slate-900 tracking-tight">{roomNumber}</span>
+        </div>
+      )}
     </div>
   )
 }

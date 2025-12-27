@@ -29,6 +29,9 @@ interface Hotel {
   map_url?: string
   image_url?: string
   phone?: string
+  wifi_ssid?: string
+  wifi_password?: string
+  images?: string[]
 }
 
 interface TripDay {
@@ -191,6 +194,9 @@ export function TripClientView({
               hotelImage={activeDay?.hotels?.image_url}
               roomNumber={roomNumber}
               hotelPhone={activeDay?.hotels?.phone}
+              wifiSsid={activeDay?.hotels?.wifi_ssid}
+              wifiPassword={activeDay?.hotels?.wifi_password}
+              images={activeDay?.hotels?.images}
             />
           )}
 

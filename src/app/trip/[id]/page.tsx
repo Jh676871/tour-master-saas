@@ -54,7 +54,7 @@ export default async function PassengerTripPage({ params }: { params: Promise<{ 
         visit_time,
         attractions (id, name, image_url, location_url, address)
       ),
-      hotels (id, name, address, map_url, image_url, phone)
+      hotels (id, name, address, map_url, image_url, phone, wifi_ssid, wifi_password, images)
     `)
     .eq('trip_id', id)
     .order('day_number', { ascending: true })
