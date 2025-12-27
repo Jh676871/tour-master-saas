@@ -5,10 +5,7 @@ const nextConfig: NextConfig = {
   // turbopack: {}, 
   
   /* 其他設定 */
-  eslint: {
-    // 部署時忽略 ESLint 錯誤 (可選，視需求而定)
-    ignoreDuringBuilds: true,
-  },
+  // eslint config is removed as it is deprecated in next.config.ts
   typescript: {
     // 部署時忽略 TS 錯誤 (可選，視需求而定)
     ignoreBuildErrors: true,
