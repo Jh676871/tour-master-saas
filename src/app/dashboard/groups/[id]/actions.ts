@@ -15,17 +15,25 @@ export async function updateTripDay(dayId: string, formData: FormData) {
   const summary = formData.get('summary') as string
   const hotel_id = formData.get('hotel_id') as string
 
-  await supabase.from('trip_days').update({
+  console.log(`Updating trip day ${dayId}:`, { meeting_time, morning_call_time, summary, hotel_id })
+
+  const { error } = await supabase.from('trip_days').update({
     meeting_time,
     morning_call_time,
     summary,
     hotel_id: hotel_id || null,
   }).eq('id', dayId)
   
+  if (error) {
+    console.error('Update Trip Day Error:', error)
+    return { error: error.message }
+  }
+
   const { data: day } = await supabase.from('trip_days').select('trip_id').eq('id', dayId).single()
   if (day) {
     revalidatePath(`/dashboard/groups/${day.trip_id}`)
   }
+  return { success: true }
 }
 
 // Add Attraction to Day

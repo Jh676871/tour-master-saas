@@ -19,8 +19,16 @@ function DayCard({ day, hotels, attractions }: { day: any, hotels: any[], attrac
 
   const handleUpdate = async (formData: FormData) => {
     setIsSaving(true)
-    await updateTripDay(day.id, formData)
-    setIsSaving(false)
+    try {
+      const result = await updateTripDay(day.id, formData)
+      if (result && result.error) {
+        alert(`更新失敗: ${result.error}`)
+      }
+    } catch (e) {
+      alert('發生未預期的錯誤')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
