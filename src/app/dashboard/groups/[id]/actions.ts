@@ -1,23 +1,7 @@
 'use server'
 
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
-
-async function getSupabase() {
-  const cookieStore = await cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-      },
-    }
-  )
-}
 
 // Initialize Trip Days based on start/end date
 // Moved to server-utils.ts to avoid Server Action overhead in Server Component
@@ -25,7 +9,7 @@ async function getSupabase() {
 
 // Update Day Info
 export async function updateTripDay(dayId: string, formData: FormData) {
-  const supabase = await getSupabase()
+  const supabase = await createClient()
   const meeting_time = formData.get('meeting_time') as string
   const morning_call_time = formData.get('morning_call_time') as string
   const summary = formData.get('summary') as string
@@ -46,7 +30,7 @@ export async function updateTripDay(dayId: string, formData: FormData) {
 
 // Add Attraction to Day
 export async function addAttractionToDay(dayId: string, attractionId: string) {
-  const supabase = await getSupabase()
+  const supabase = await createClient()
   await supabase.from('trip_day_attractions').insert({
     trip_day_id: dayId,
     attraction_id: attractionId,
@@ -60,7 +44,7 @@ export async function addAttractionToDay(dayId: string, attractionId: string) {
 
 // Remove Attraction from Day
 export async function removeAttractionFromDay(linkId: string) {
-  const supabase = await getSupabase()
+  const supabase = await createClient()
   
   // Get trip_id before deleting to revalidate
   const { data: link } = await supabase.from('trip_day_attractions')
@@ -79,21 +63,21 @@ export async function removeAttractionFromDay(linkId: string) {
 
 // Add Member
 export async function addMember(tripId: string, name: string, phone?: string) {
-  const supabase = await getSupabase()
+  const supabase = await createClient()
   await supabase.from('members').insert({ trip_id: tripId, name, phone })
   revalidatePath(`/dashboard/groups/${tripId}`)
 }
 
 // Delete Member
 export async function deleteMember(memberId: string, tripId: string) {
-  const supabase = await getSupabase()
+  const supabase = await createClient()
   await supabase.from('members').delete().eq('id', memberId)
   revalidatePath(`/dashboard/groups/${tripId}`)
 }
 
 // Update Room Assignment
 export async function updateRoomAssignment(tripId: string, memberId: string, date: string, roomNumber: string) {
-  const supabase = await getSupabase()
+  const supabase = await createClient()
   
   if (!roomNumber) {
     // Delete if empty

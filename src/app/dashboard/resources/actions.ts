@@ -1,23 +1,11 @@
 'use server'
 
-import { createServerClient } from '@supabase/ssr'
-import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { createClient } from '@/utils/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 
 export async function createHotel(prevState: any, formData: FormData) {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-      },
-    }
-  )
+  const supabase = await createClient()
 
   const {
     data: { user },
@@ -38,7 +26,7 @@ export async function createHotel(prevState: any, formData: FormData) {
 
   // Use Service Role to bypass RLS for insert
   // This is safe because we verified the user above
-  const supabaseAdmin = createClient(
+  const supabaseAdmin = createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // Fallback if key missing (though likely to fail RLS again if so)
   )
@@ -61,18 +49,7 @@ export async function createHotel(prevState: any, formData: FormData) {
 }
 
 export async function createAttraction(prevState: any, formData: FormData) {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-      },
-    }
-  )
+  const supabase = await createClient()
 
   const {
     data: { user },
@@ -90,7 +67,7 @@ export async function createAttraction(prevState: any, formData: FormData) {
   }
 
   // Use Service Role to bypass RLS for insert
-  const supabaseAdmin = createClient(
+  const supabaseAdmin = createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )

@@ -1,22 +1,10 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { ResourceTabs } from './components/ResourceTabs'
 import { CreateHotelModal, CreateAttractionModal } from './components/CreateResourceModals'
 
 export default async function ResourcesPage() {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-      },
-    }
-  )
+  const supabase = await createClient()
 
   const {
     data: { user },

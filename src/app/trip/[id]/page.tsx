@@ -1,22 +1,12 @@
-import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import { TripClientView } from './components/TripClientView'
 
 export default async function PassengerTripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const supabase = await createClient()
   const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-      },
-    }
-  )
 
   // 1. Check Passenger Session
   const passengerCookie = cookieStore.get(`passenger_session_${id}`)

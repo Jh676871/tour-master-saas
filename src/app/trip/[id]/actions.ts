@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -8,29 +8,8 @@ export async function joinTrip(tripId: string, formData: FormData) {
   const name = formData.get('name') as string
   if (!name) return
 
+  const supabase = await createClient()
   const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-          }
-        },
-      },
-    }
-  )
 
   // 1. Check if member already exists with this name (Simple matching)
   // In a real app, might want more robust auth, but for "One Click Join", name matching is common.

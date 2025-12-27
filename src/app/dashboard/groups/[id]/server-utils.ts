@@ -1,26 +1,10 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-
-async function getSupabase() {
-  const cookieStore = await cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-      },
-    }
-  )
-}
+import { createClient } from '@/utils/supabase/server'
 
 // Initialize Trip Days based on start/end date
 // This is a pure server-side utility, not a Server Action
 export async function initializeTripDays(tripId: string) {
   try {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     
     // Get trip dates
     const { data: trip } = await supabase.from('trips').select('*').eq('id', tripId).single()
