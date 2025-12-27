@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { TripClientView } from './components/TripClientView'
 
 export default async function PassengerTripPage({ params }: { params: Promise<{ id: string }> }) {
@@ -38,6 +38,11 @@ export default async function PassengerTripPage({ params }: { params: Promise<{ 
       // Cookie invalid
       memberId = undefined
     }
+  }
+
+  // Redirect to Join if no session
+  if (!memberId) {
+    redirect(`/trip/${id}/join`)
   }
 
   // 3. Fetch Trip & Days

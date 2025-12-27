@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Upload, QrCode, Trash2, Phone } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import * as XLSX from 'xlsx'
 import { addMember, deleteMember } from '../actions'
 import { Drawer, DrawerTrigger, DrawerContent, DrawerTitle, DrawerDescription } from '@/components/ui/drawer'
 import { motion, PanInfo, useAnimation } from 'framer-motion'
+import { createClient } from '@/lib/supabase'
 
 interface MemberManagerProps {
   tripId: string
@@ -76,10 +77,46 @@ const SwipeableMemberItem = ({ member, onDelete }: { member: any; onDelete: (id:
 
 export function MemberManager({ tripId, members }: MemberManagerProps) {
   const [activeTab, setActiveTab] = useState<'list' | 'invite'>('list')
+  const [memberList, setMemberList] = useState(members)
   const [newMemberName, setNewMemberName] = useState('')
   const [newMemberPhone, setNewMemberPhone] = useState('')
   const [isImporting, setIsImporting] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const supabase = createClient()
+
+  // Sync props to state
+  useEffect(() => {
+    setMemberList(members)
+  }, [members])
+
+  // Realtime Subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel(`members-${tripId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'members',
+          filter: `trip_id=eq.${tripId}`
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setMemberList((prev) => [...prev, payload.new])
+          } else if (payload.eventType === 'DELETE') {
+            setMemberList((prev) => prev.filter((m) => m.id !== payload.old.id))
+          } else if (payload.eventType === 'UPDATE') {
+            setMemberList((prev) => prev.map((m) => m.id === payload.new.id ? payload.new : m))
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [tripId, supabase])
 
   // Join Link
   const joinLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/trip/${tripId}/join`
@@ -234,7 +271,7 @@ export function MemberManager({ tripId, members }: MemberManagerProps) {
 
           {/* Member List */}
           <div className="space-y-2">
-            {members.map((member) => (
+            {memberList.map((member) => (
               <SwipeableMemberItem 
                  key={member.id} 
                  member={member} 
@@ -242,7 +279,7 @@ export function MemberManager({ tripId, members }: MemberManagerProps) {
               />
             ))}
             
-            {members.length === 0 && (
+            {memberList.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/30 rounded-lg border border-dashed">
                 <p>尚無旅客資料</p>
                 <p className="text-xs mt-1">點擊上方按鈕新增或匯入</p>

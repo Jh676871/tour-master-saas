@@ -1,24 +1,74 @@
 'use client'
 
-import { use, useState } from 'react'
-import { joinTrip } from '../actions'
+import { use, useState, useEffect } from 'react'
+import { joinTrip, restoreSession } from '../actions'
 import { motion } from 'framer-motion'
 import { UserCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function JoinTripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
+  // 1. Auto-Identification Check
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      if (typeof window === 'undefined') return
+
+      const savedMemberId = localStorage.getItem(`traveler_id_${id}`)
+      if (savedMemberId) {
+        setLoading(true)
+        try {
+          // Verify ID with backend and restore cookie
+          const result = await restoreSession(id, savedMemberId)
+          if (result.success) {
+            router.push(`/trip/${id}`)
+            return
+          } else {
+            // Invalid ID (maybe deleted from DB), clear it
+            localStorage.removeItem(`traveler_id_${id}`)
+          }
+        } catch (err) {
+          console.error('Session restore failed', err)
+        } finally {
+          setLoading(false)
+        }
+      }
+      setCheckingAuth(false)
+    }
+
+    checkExistingSession()
+  }, [id, router])
 
   const handleSubmit = async (formData: FormData) => {
     setLoading(true)
     setError('')
     try {
-      await joinTrip(id, formData)
+      const result = await joinTrip(id, formData)
+      if (result && result.success && result.memberId) {
+        // 2. Store in LocalStorage
+        localStorage.setItem(`traveler_id_${id}`, result.memberId)
+        
+        // 3. Redirect
+        router.push(`/trip/${id}`)
+      } else {
+        throw new Error('加入失敗')
+      }
     } catch (err: any) {
       setError(err.message || '無法加入，請重試')
       setLoading(false)
     }
+  }
+
+  if (checkingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-gray-500">正在確認身分...</div>
+      </div>
+    )
   }
 
   return (

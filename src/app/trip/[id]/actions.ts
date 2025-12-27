@@ -74,5 +74,46 @@ export async function joinTrip(tripId: string, formData: FormData) {
     })
   }
 
-  redirect(`/trip/${tripId}`)
+  return { success: true, memberId }
+}
+
+export async function restoreSession(tripId: string, memberId: string) {
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+           try {
+             cookiesToSet.forEach(({ name, value, options }) =>
+               cookieStore.set(name, value, options)
+             )
+           } catch {}
+        },
+      },
+    }
+  )
+
+  // Verify member exists
+  const { data: member } = await supabase
+    .from('members')
+    .select('id')
+    .eq('id', memberId)
+    .eq('trip_id', tripId)
+    .single()
+
+  if (member) {
+    cookieStore.set(`passenger_session_${tripId}`, memberId, {
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+    })
+    return { success: true }
+  }
+  return { success: false }
 }
