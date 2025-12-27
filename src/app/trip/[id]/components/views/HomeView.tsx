@@ -40,7 +40,7 @@ export function HomeView({
 }: HomeViewProps) {
   
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '今日'
+    if (!dateStr) return ''
     return format(new Date(dateStr), 'M/d (EEE)', { locale: zhTW })
   }
 

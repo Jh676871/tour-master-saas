@@ -83,9 +83,13 @@ export default async function PassengerTripPage({ params }: { params: Promise<{ 
     .select('member_id, day_date, room_number')
     .eq('trip_id', id)
 
-  // 6. Calculate "Today" and "Tomorrow" Context
-  const todayStr = new Date().toISOString().split('T')[0]
-  const tomorrow = new Date()
+  // 6. Calculate "Today" and "Tomorrow" Context (UTC+8 for Taiwan)
+  const now = new Date()
+  const taiwanOffset = 8 * 60 // UTC+8 in minutes
+  const localTime = new Date(now.getTime() + (taiwanOffset * 60 * 1000))
+  const todayStr = localTime.toISOString().split('T')[0]
+  
+  const tomorrow = new Date(localTime)
   tomorrow.setDate(tomorrow.getDate() + 1)
   const tomorrowStr = tomorrow.toISOString().split('T')[0]
 
