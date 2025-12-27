@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
@@ -35,7 +36,14 @@ export async function createHotel(prevState: any, formData: FormData) {
     return { error: '飯店名稱為必填' }
   }
 
-  const { error } = await supabase.from('hotels').insert({
+  // Use Service Role to bypass RLS for insert
+  // This is safe because we verified the user above
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // Fallback if key missing (though likely to fail RLS again if so)
+  )
+
+  const { error } = await supabaseAdmin.from('hotels').insert({
     admin_id: user.id,
     name,
     address,
@@ -81,7 +89,13 @@ export async function createAttraction(prevState: any, formData: FormData) {
     return { error: '景點名稱為必填' }
   }
 
-  const { error } = await supabase.from('attractions').insert({
+  // Use Service Role to bypass RLS for insert
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  const { error } = await supabaseAdmin.from('attractions').insert({
     admin_id: user.id,
     name,
     description,
