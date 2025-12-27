@@ -20,39 +20,8 @@ async function getSupabase() {
 }
 
 // Initialize Trip Days based on start/end date
-export async function initializeTripDays(tripId: string) {
-  const supabase = await getSupabase()
-  
-  // Get trip dates
-  const { data: trip } = await supabase.from('trips').select('*').eq('id', tripId).single()
-  if (!trip || !trip.start_date || !trip.end_date) return
+// Moved to server-utils.ts to avoid Server Action overhead in Server Component
 
-  const startDate = new Date(trip.start_date)
-  const endDate = new Date(trip.end_date)
-  
-  // Calculate days
-  const days = []
-  let currentDate = new Date(startDate)
-  let dayNum = 1
-  
-  while (currentDate <= endDate) {
-    days.push({
-      trip_id: tripId,
-      day_date: currentDate.toISOString().split('T')[0],
-      day_number: dayNum,
-    })
-    currentDate.setDate(currentDate.getDate() + 1)
-    dayNum++
-  }
-  
-  // Upsert days (ignore if exists)
-  if (days.length > 0) {
-    const { error } = await supabase.from('trip_days').upsert(days, { onConflict: 'trip_id,day_date', ignoreDuplicates: true })
-    if (error) {
-      console.error('Error initializing trip days:', error)
-    }
-  }
-}
 
 // Update Day Info
 export async function updateTripDay(dayId: string, formData: FormData) {
@@ -142,4 +111,16 @@ export async function updateRoomAssignment(tripId: string, memberId: string, dat
     }, { onConflict: 'member_id,day_date' })
   }
   revalidatePath(`/dashboard/groups/${tripId}`)
+}
+
+// Send Room Notification
+export async function sendRoomNotification(tripId: string, memberId: string) {
+    // In a real app, this would integrate with LINE Notify, SMS, or Push Notification
+    // For now, we'll just log it or maybe update a 'last_notified_at' field if we had one
+    console.log(`Sending room notification to member ${memberId} for trip ${tripId}`)
+    
+    // Optional: Add a 'notifications' table log
+    // await supabase.from('notifications').insert(...)
+    
+    return { success: true }
 }

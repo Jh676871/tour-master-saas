@@ -1,10 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
-import { ItineraryView } from './components/ItineraryView'
-import { RoomingTable } from './components/RoomingTable'
-import { MemberManager } from './components/MemberManager'
-import { initializeTripDays } from './actions'
+import { TripDashboard } from './components/TripDashboard'
+import { initializeTripDays } from './server-utils'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 
@@ -77,31 +75,15 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
         </div>
       </div>
 
-      <div className="space-y-12">
-        <section>
-          <h2 className="mb-4 text-xl font-semibold text-foreground border-l-4 border-primary pl-3">行程規劃</h2>
-          <ItineraryView 
-            days={days || []} 
-            hotels={hotels || []} 
-            attractions={attractions || []} 
-          />
-        </section>
-
-        <section>
-          <h2 className="mb-4 text-xl font-semibold text-foreground border-l-4 border-primary pl-3">旅客管理</h2>
-          <MemberManager tripId={id} members={members || []} />
-        </section>
-
-        <section>
-          <h2 className="mb-4 text-xl font-semibold text-foreground border-l-4 border-primary pl-3">分房表 (Rooming List)</h2>
-          <RoomingTable 
-            tripId={id}
-            days={days || []}
-            members={members || []}
-            assignments={assignments || []}
-          />
-        </section>
-      </div>
+      <TripDashboard 
+        tripId={id}
+        trip={trip}
+        days={days || []}
+        members={members || []}
+        assignments={assignments || []}
+        hotels={hotels || []}
+        attractions={attractions || []}
+      />
     </div>
   )
 }

@@ -98,99 +98,76 @@ export function TripClientView({
 
   // Auto-scroll logic for "Next Meeting"
   const activeDay = days[activeDayIndex]
-  const hotelName = activeDay?.hotels?.name
+  const todaysAttractions = activeDay?.trip_day_attractions?.map((tda: any) => ({
+    ...tda.attractions,
+    visit_time: tda.visit_time
+  })) || []
   const hotelAddress = activeDay?.hotels?.address
-  const hotelMapUrl = activeDay?.hotels?.map_url
-  const hotelImage = activeDay?.hotels?.image_url
-  const hotelPhone = activeDay?.hotels?.phone
-
-  // Find next attraction
-  const nextAttraction = activeDay?.trip_day_attractions?.[0]?.attractions ? {
-    name: activeDay.trip_day_attractions[0].attractions.name,
-    time: activeDay.trip_day_attractions[0].visit_time?.slice(0, 5),
-    image_url: activeDay.trip_day_attractions[0].attractions.image_url
-  } : undefined
-
-  // Time of day logic
-  const [isMorning, setIsMorning] = useState(true)
-
-  useEffect(() => {
-    setIsMorning(new Date().getHours() < 12)
-  }, [])
   
+  // Find next attraction
+  const now = new Date()
+  const currentTime = now.getHours() * 60 + now.getMinutes()
+  
+  const nextAttraction = todaysAttractions.find((attr: any) => {
+      if (!attr.visit_time) return false
+      const [h, m] = attr.visit_time.split(':').map(Number)
+      return (h * 60 + m) > currentTime
+  })
+
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-24 font-sans text-[#1E293B] selection:bg-[#4F46E5] selection:text-white">
+    <div className="flex h-[100dvh] flex-col bg-[#F8FAFC]">
       {/* 1. Identity Check Modal */}
       {!memberName && (
         <JoinModal tripId={tripId} tripTitle={tripTitle} />
       )}
 
-      {/* 2. Sticky Header */}
-      <TravelerTopBar memberName={memberName} tripTitle={tripTitle} />
+      <TravelerTopBar 
+        tripTitle={tripTitle} 
+        memberName={memberName}
+        onOpenBroadcast={() => setShowBroadcast(true)}
+        hasNewBroadcast={!!latestBroadcast && !showBroadcast}
+      />
 
-      {/* Broadcast Banner */}
-      <AnimatePresence>
-        {showBroadcast && latestBroadcast && (
-          <motion.div
-            initial={{ height: 0, opacity: 0, scale: 0.95 }}
-            animate={{ height: 'auto', opacity: 1, scale: 1 }}
-            exit={{ height: 0, opacity: 0, scale: 0.95 }}
-            className="sticky top-[72px] z-30 px-4 mt-2"
-          >
-            <div className="bg-red-500 text-white p-4 shadow-lg shadow-red-500/20 rounded-3xl backdrop-blur-md">
-              <div className="flex items-start gap-3">
-                <Volume2 className="h-5 w-5 mt-0.5 animate-pulse flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="font-bold text-sm mb-1">領隊緊急廣播</p>
-                  <p className="text-sm leading-relaxed font-medium">{latestBroadcast.message}</p>
-                  <p className="text-[10px] opacity-80 mt-1">
-                    {new Date(latestBroadcast.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                  </p>
-                </div>
-                <button 
-                  onClick={() => setShowBroadcast(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="flex-1 overflow-y-auto pb-24">
+        <AnimatePresence mode="wait">
+          {currentTab === 'home' && (
+            <motion.div
+              key="home"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <HomeView 
+                roomNumber={roomNumber}
+                hotelName={activeDay?.hotels?.name}
+                hotelAddress={hotelAddress}
+                todaysAttractions={todaysAttractions}
+                onSwitchTab={setCurrentTab}
+                memberName={memberName}
+              />
+            </motion.div>
+          )}
 
-      {/* 3. Main Content Area */}
-      <main className="w-full max-w-md mx-auto pt-2">
-        {currentTab === 'home' && (
-          <HomeView 
-            nextAttraction={nextAttraction}
-            roomNumber={roomNumber}
-            hotelName={hotelName}
-            onSwitchTab={setCurrentTab}
-            isMorning={isMorning}
-            memberName={memberName}
-          />
-        )}
+          {currentTab === 'itinerary' && (
+            <ItineraryView days={days} />
+          )}
 
-        {currentTab === 'itinerary' && (
-          <ItineraryView days={days} />
-        )}
+          {currentTab === 'hotel' && (
+            <HotelView 
+              hotelName={activeDay?.hotels?.name}
+              hotelAddress={hotelAddress}
+              hotelMapUrl={activeDay?.hotels?.map_url}
+              hotelImage={activeDay?.hotels?.image_url}
+              roomNumber={roomNumber}
+              hotelPhone={activeDay?.hotels?.phone}
+            />
+          )}
 
-        {currentTab === 'hotel' && (
-          <HotelView 
-            hotelName={hotelName}
-            hotelAddress={hotelAddress}
-            hotelMapUrl={hotelMapUrl}
-            hotelImage={hotelImage}
-            roomNumber={roomNumber}
-            hotelPhone={hotelPhone}
-          />
-        )}
-
-        {currentTab === 'emergency' && (
-          <EmergencyView />
-        )}
-      </main>
+          {currentTab === 'emergency' && (
+            <EmergencyView />
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* 4. Fixed Bottom Nav */}
       <TravelerBottomNav currentTab={currentTab} onTabChange={setCurrentTab} />
