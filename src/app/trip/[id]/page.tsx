@@ -85,14 +85,14 @@ export default async function PassengerTripPage({ params }: { params: Promise<{ 
 
   // 6. Calculate "Today" Context
   const todayStr = new Date().toISOString().split('T')[0]
-  const activeDay = days?.find((d: any) => d.day_date === todayStr) || days?.[0]
+  const activeDay = days?.find((d: { day_date: string }) => d.day_date === todayStr) || days?.[0]
   
   // Find User's Room for Today
   let myAssignment = null
-  let roommateNames: string[] = []
+  const roommateNames: string[] = []
 
   if (memberId) {
-    myAssignment = assignments?.find((a: any) => 
+    myAssignment = assignments?.find((a: { member_id: string; day_date: string }) => 
       a.member_id === memberId && a.day_date === (activeDay?.day_date || todayStr)
     )
     

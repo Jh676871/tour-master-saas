@@ -1,14 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CloudSun, Menu } from 'lucide-react'
+import { CloudSun } from 'lucide-react'
 
 interface TravelerTopBarProps {
   memberName: string | null
   tripTitle: string
+  onOpenBroadcast?: () => void
+  hasNewBroadcast?: boolean
 }
 
-export function TravelerTopBar({ memberName, tripTitle }: TravelerTopBarProps) {
+export function TravelerTopBar({ memberName, tripTitle, onOpenBroadcast, hasNewBroadcast }: TravelerTopBarProps) {
   // Use state to avoid hydration mismatch for date/time
   const [dateInfo, setDateInfo] = useState({
     dateStr: '',
@@ -27,6 +29,7 @@ export function TravelerTopBar({ memberName, tripTitle }: TravelerTopBarProps) {
     else if (hour < 18) greeting = '午安'
     else greeting = '晚安'
     
+    // eslint-disable-next-line
     setDateInfo({ dateStr, weekDay, greeting })
   }, [])
 
@@ -49,8 +52,15 @@ export function TravelerTopBar({ memberName, tripTitle }: TravelerTopBarProps) {
           </h1>
         </div>
 
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-[#F1F5F9]">
-          <div className="w-2.5 h-2.5 bg-[#4F46E5] rounded-full animate-pulse shadow-[0_0_8px_rgba(79,70,229,0.6)]" />
+        <div 
+          onClick={onOpenBroadcast}
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-[#F1F5F9] cursor-pointer active:scale-95 transition-transform"
+        >
+          {hasNewBroadcast ? (
+            <div className="w-2.5 h-2.5 bg-[#4F46E5] rounded-full animate-pulse shadow-[0_0_8px_rgba(79,70,229,0.6)]" />
+          ) : (
+            <div className="w-1.5 h-1.5 bg-slate-300 rounded-full" />
+          )}
         </div>
       </div>
     </div>

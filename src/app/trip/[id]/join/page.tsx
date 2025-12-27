@@ -57,8 +57,8 @@ export default function JoinTripPage({ params }: { params: Promise<{ id: string 
       } else {
         throw new Error('加入失敗')
       }
-    } catch (err: any) {
-      setError(err.message || '無法加入，請重試')
+    } catch (err: unknown) {
+      setError((err as Error).message || '無法加入，請重試')
       setLoading(false)
     }
   }

@@ -18,6 +18,7 @@ export function JoinModal({ tripId, tripTitle }: JoinModalProps) {
     if (typeof window !== 'undefined') {
       const savedName = localStorage.getItem(`traveler_name_${tripId}`)
       if (savedName) {
+        // eslint-disable-next-line
         setName(savedName)
       } else {
         setIsAutoJoining(false)
@@ -44,8 +45,8 @@ export function JoinModal({ tripId, tripTitle }: JoinModalProps) {
           const formData = new FormData()
           formData.append('name', savedName)
           await joinTrip(tripId, formData)
-        } catch (error: any) {
-           if (error?.digest?.startsWith('NEXT_REDIRECT')) {
+        } catch (error: unknown) {
+           if ((error as { digest?: string })?.digest?.startsWith('NEXT_REDIRECT')) {
              throw error
            }
            console.error("Auto-join failed:", error)
@@ -77,9 +78,9 @@ export function JoinModal({ tripId, tripTitle }: JoinModalProps) {
       
       await joinTrip(tripId, formData)
       // The action will redirect or we rely on revalidation
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Allow redirect to propagate
-      if (error?.digest?.startsWith('NEXT_REDIRECT')) {
+      if ((error as { digest?: string })?.digest?.startsWith('NEXT_REDIRECT')) {
         throw error
       }
       console.error(error)

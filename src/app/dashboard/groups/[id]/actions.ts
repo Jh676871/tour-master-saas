@@ -94,6 +94,7 @@ export async function updateRoomAssignment(tripId: string, memberId: string, dat
       room_number: roomNumber
     }, { onConflict: 'member_id,day_date' })
   }
+  await sendRoomNotification(tripId, memberId)
   revalidatePath(`/dashboard/groups/${tripId}`)
 }
 

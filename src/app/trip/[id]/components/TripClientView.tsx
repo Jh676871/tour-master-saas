@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { Volume2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TravelerTopBar } from './TravelerTopBar'
 import { TravelerBottomNav } from './TravelerBottomNav'
@@ -12,11 +11,41 @@ import { HotelView } from './views/HotelView'
 import { EmergencyView } from './views/EmergencyView'
 import { JoinModal } from './JoinModal'
 
+interface Attraction {
+  name: string
+  image_url?: string
+  location_url?: string
+  address?: string
+}
+
+interface TripDayAttraction {
+  attractions: Attraction
+  visit_time: string
+}
+
+interface Hotel {
+  name: string
+  address: string
+  map_url?: string
+  image_url?: string
+  phone?: string
+}
+
+interface TripDay {
+  trip_day_attractions: TripDayAttraction[]
+  hotels: Hotel
+}
+
+interface Broadcast {
+  message: string
+  created_at: string
+}
+
 interface TripClientViewProps {
   tripId: string
   tripTitle: string
-  days: any[]
-  latestBroadcast: any
+  days: TripDay[]
+  latestBroadcast: Broadcast | null
   roomNumber?: string
   roommates: string[]
   assignments: any[]
@@ -29,15 +58,15 @@ export function TripClientView({
   days,
   latestBroadcast: initialBroadcast,
   roomNumber,
-  roommates,
-  assignments,
+  roommates: _roommates,
+  assignments: _assignments,
   memberName
 }: TripClientViewProps) {
   const [currentTab, setCurrentTab] = useState('home')
-  const [activeDayIndex, setActiveDayIndex] = useState(0)
+  const [activeDayIndex] = useState(0)
   
   // Broadcast State
-  const [latestBroadcast, setLatestBroadcast] = useState(initialBroadcast)
+  const [latestBroadcast] = useState(initialBroadcast)
   const [showBroadcast, setShowBroadcast] = useState(!!initialBroadcast)
 
   const [supabase] = useState(() => createBrowserClient(
@@ -71,7 +100,7 @@ export function TripClientView({
         },
         (payload) => {
           const newBroadcast = payload.new as { message: string, created_at: string }
-          setLatestBroadcast(newBroadcast)
+          // setLatestBroadcast(newBroadcast)
           setShowBroadcast(true)
           
           // Trigger System Notification
@@ -98,13 +127,14 @@ export function TripClientView({
 
   // Auto-scroll logic for "Next Meeting"
   const activeDay = days[activeDayIndex]
-  const todaysAttractions = activeDay?.trip_day_attractions?.map((tda: any) => ({
+  const todaysAttractions = activeDay?.trip_day_attractions?.map((tda) => ({
     ...tda.attractions,
     visit_time: tda.visit_time
   })) || []
   const hotelAddress = activeDay?.hotels?.address
   
   // Find next attraction
+  /*
   const now = new Date()
   const currentTime = now.getHours() * 60 + now.getMinutes()
   
@@ -113,6 +143,7 @@ export function TripClientView({
       const [h, m] = attr.visit_time.split(':').map(Number)
       return (h * 60 + m) > currentTime
   })
+  */
 
   return (
     <div className="flex h-[100dvh] flex-col bg-[#F8FAFC]">
