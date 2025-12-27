@@ -109,6 +109,7 @@ export async function updateRoomAssignment(tripId: string, memberId: string, dat
 }
 
 // Send Room Notification
+// Exported for RoomingTable.tsx
 export async function sendRoomNotification(tripId: string, memberId: string) {
     // In a real app, this would integrate with LINE Notify, SMS, or Push Notification
     // For now, we'll just log it or maybe update a 'last_notified_at' field if we had one
