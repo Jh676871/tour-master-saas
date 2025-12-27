@@ -59,6 +59,8 @@ interface TripClientViewProps {
   roommates: string[]
   assignments: any[]
   memberName: string | null
+  todayData?: TripDay
+  tomorrowData?: TripDay
 }
 
 export function TripClientView({
@@ -69,12 +71,17 @@ export function TripClientView({
   roomNumber: initialRoomNumber,
   roommates: _roommates,
   assignments: _assignments,
-  memberName
+  memberName,
+  todayData,
+  tomorrowData
 }: TripClientViewProps) {
   const [currentTab, setCurrentTab] = useState('home')
   
   // Realtime State
   const [days, setDays] = useState<TripDay[]>(initialDays)
+  const [activeDay, setActiveDay] = useState<TripDay | undefined>(todayData)
+  const [tomorrowDay, setTomorrowDay] = useState<TripDay | undefined>(tomorrowData)
+
   const [roomNumber, setRoomNumber] = useState(initialRoomNumber)
   const [latestBroadcast, setLatestBroadcast] = useState(initialBroadcast)
   const [showBroadcast, setShowBroadcast] = useState(!!initialBroadcast)
@@ -83,13 +90,6 @@ export function TripClientView({
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   ))
-
-  // Calculate Active Day based on today's date
-  const [activeDay, setActiveDay] = useState<TripDay | undefined>(() => {
-    if (typeof window === 'undefined') return initialDays[0]
-    const todayStr = new Date().toISOString().split('T')[0]
-    return initialDays.find(d => d.day_date === todayStr) || initialDays[0]
-  })
 
   // Realtime Subscriptions
   useEffect(() => {
@@ -127,6 +127,9 @@ export function TripClientView({
             // Update active day if it's the one being updated
             if (activeDay?.id === updatedDay.id) {
               setActiveDay(updatedDay)
+            }
+            if (tomorrowDay?.id === updatedDay.id) {
+                setTomorrowDay(updatedDay)
             }
           }
         }
@@ -230,6 +233,10 @@ export function TripClientView({
                 meetingTime={activeDay?.meeting_time}
                 meetingLocation={activeDay?.meeting_location}
                 hotelImage={activeDay?.hotels?.image_url}
+                tomorrowDate={tomorrowDay?.day_date}
+                tomorrowMorningCall={tomorrowDay?.morning_call_time}
+                tomorrowMeetingTime={tomorrowDay?.meeting_time}
+                todayDate={activeDay?.day_date}
               />
             </motion.div>
           )}

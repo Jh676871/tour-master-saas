@@ -83,9 +83,14 @@ export default async function PassengerTripPage({ params }: { params: Promise<{ 
     .select('member_id, day_date, room_number')
     .eq('trip_id', id)
 
-  // 6. Calculate "Today" Context
+  // 6. Calculate "Today" and "Tomorrow" Context
   const todayStr = new Date().toISOString().split('T')[0]
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowStr = tomorrow.toISOString().split('T')[0]
+
   const activeDay = days?.find((d: { day_date: string }) => d.day_date === todayStr) || days?.[0]
+  const tomorrowDay = days?.find((d: { day_date: string }) => d.day_date === tomorrowStr)
   
   // Find User's Room for Today
   let myAssignment = null
@@ -109,6 +114,8 @@ export default async function PassengerTripPage({ params }: { params: Promise<{ 
       roommates={roommateNames}
       assignments={assignments || []}
       memberName={memberName}
+      todayData={activeDay}
+      tomorrowData={tomorrowDay}
     />
   )
 }
