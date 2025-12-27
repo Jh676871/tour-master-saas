@@ -11,14 +11,16 @@ import { revalidatePath } from 'next/cache'
 export async function updateTripDay(dayId: string, formData: FormData) {
   const supabase = await createClient()
   const meeting_time = formData.get('meeting_time') as string
+  const meeting_location = formData.get('meeting_location') as string
   const morning_call_time = formData.get('morning_call_time') as string
   const summary = formData.get('summary') as string
   const hotel_id = formData.get('hotel_id') as string
 
-  console.log(`Updating trip day ${dayId}:`, { meeting_time, morning_call_time, summary, hotel_id })
+  console.log(`Updating trip day ${dayId}:`, { meeting_time, meeting_location, morning_call_time, summary, hotel_id })
 
   const { error } = await supabase.from('trip_days').update({
     meeting_time,
+    meeting_location,
     morning_call_time,
     summary,
     hotel_id: hotel_id || null,

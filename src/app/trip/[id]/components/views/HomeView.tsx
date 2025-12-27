@@ -10,9 +10,24 @@ interface HomeViewProps {
   todaysAttractions: any[]
   onSwitchTab: (tab: string) => void
   memberName: string | null
+  morningCall?: string
+  meetingTime?: string
+  meetingLocation?: string
+  hotelImage?: string
 }
 
-export function HomeView({ roomNumber, hotelName, hotelAddress, todaysAttractions, onSwitchTab, memberName }: HomeViewProps) {
+export function HomeView({ 
+  roomNumber, 
+  hotelName, 
+  hotelAddress, 
+  todaysAttractions, 
+  onSwitchTab, 
+  memberName,
+  morningCall,
+  meetingTime,
+  meetingLocation,
+  hotelImage
+}: HomeViewProps) {
   const openTaxiMap = () => {
     if (hotelAddress) {
       window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotelAddress)}`, '_blank')
@@ -30,23 +45,62 @@ export function HomeView({ roomNumber, hotelName, hotelAddress, todaysAttraction
         <p className="text-slate-500 text-sm">歡迎參加今天的旅程</p>
       </div>
 
-      {/* 2. Room Card (Dynamic) */}
-      <div className="relative group overflow-hidden rounded-[2rem] shadow-lg transition-all hover:shadow-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#4F46E5] to-[#6366F1]" />
-        
-        {/* Decorative Circles */}
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-xl" />
+      {/* 2. Hero Card (Today's Focus) */}
+      <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-200 relative overflow-hidden">
+         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
+         <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl -ml-10 -mb-10" />
+         
+         <h2 className="text-sm font-bold opacity-80 uppercase tracking-widest mb-4">今日重點</h2>
+         
+         <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-1">
+               <div className="flex items-center gap-2 text-indigo-100 text-xs font-bold uppercase">
+                  <Clock className="w-3.5 h-3.5" />
+                  晨喚
+               </div>
+               <p className="text-3xl font-black tracking-tight">{morningCall || '--:--'}</p>
+            </div>
+            
+            <div className="space-y-1">
+               <div className="flex items-center gap-2 text-indigo-100 text-xs font-bold uppercase">
+                  <Clock className="w-3.5 h-3.5" />
+                  集合
+               </div>
+               <p className="text-3xl font-black tracking-tight">{meetingTime || '--:--'}</p>
+            </div>
+         </div>
 
-        <div className="relative p-8 text-white">
+         {meetingLocation && (
+            <div className="mt-6 pt-4 border-t border-white/20">
+               <div className="flex items-center gap-2 text-indigo-100 text-xs font-bold uppercase mb-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  集合地點
+               </div>
+               <p className="text-lg font-bold leading-tight">{meetingLocation}</p>
+            </div>
+         )}
+      </div>
+
+      {/* 3. Room Card (Dynamic) */}
+      <div className="relative group overflow-hidden rounded-[2rem] shadow-lg transition-all hover:shadow-xl bg-white border border-slate-100">
+        {hotelImage ? (
+          <div className="absolute inset-0">
+            <img src={hotelImage} alt="Hotel Background" className="w-full h-full object-cover opacity-20 group-hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-white/60" />
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#4F46E5]/5 to-[#6366F1]/5" />
+        )}
+        
+        <div className="relative p-8">
             <div className="flex items-start justify-between mb-8">
               <div>
-                <p className="text-xs font-bold tracking-widest uppercase opacity-80 mb-1">今晚入住</p>
-                <h2 className="text-xl font-bold leading-tight line-clamp-2 max-w-[200px]">
+                <p className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-1">今晚入住</p>
+                <h2 className="text-xl font-bold leading-tight line-clamp-2 max-w-[200px] text-slate-900">
                   {hotelName || '尚未安排飯店'}
                 </h2>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+              <div className="w-12 h-12 rounded-2xl bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5]">
                 <BedDouble className="w-6 h-6" />
               </div>
             </div>
@@ -58,25 +112,25 @@ export function HomeView({ roomNumber, hotelName, hotelAddress, todaysAttraction
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", bounce: 0.5 }}
                 >
-                   <p className="text-xs font-bold uppercase opacity-80 mb-1">您的房號</p>
-                   <div className="flex items-baseline gap-2">
+                   <p className="text-xs font-bold uppercase text-slate-400 mb-1">您的房號</p>
+                   <div className="flex items-baseline gap-2 text-slate-900">
                      <span className="text-6xl font-black tracking-tighter drop-shadow-md">
                        {roomNumber}
                      </span>
-                     <span className="text-xl font-medium opacity-80">號房</span>
+                     <span className="text-xl font-medium opacity-60">號房</span>
                    </div>
-                   <div className="mt-2 inline-flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">
-                      <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                   <div className="mt-2 inline-flex items-center gap-1 bg-green-50 px-3 py-1 rounded-full text-xs font-bold text-green-700">
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                       已分配完成
                    </div>
                 </motion.div>
               ) : (
                 <div className="flex flex-col gap-3 py-2">
                   <div className="flex items-center gap-3">
-                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                     <p className="font-medium text-lg">領隊正在分房中...</p>
+                     <div className="w-5 h-5 border-2 border-[#4F46E5]/30 border-t-[#4F46E5] rounded-full animate-spin" />
+                     <p className="font-medium text-lg text-slate-700">領隊正在分房中...</p>
                   </div>
-                  <p className="text-sm opacity-70 pl-8">請稍候，分房完成後將自動顯示房號</p>
+                  <p className="text-sm text-slate-400 pl-8">請稍候，分房完成後將自動顯示房號</p>
                 </div>
               )}
             </div>

@@ -61,6 +61,16 @@ function DayCard({ day, hotels, attractions }: { day: any, hotels: any[], attrac
         </div>
 
         <div>
+          <label className="block text-sm font-medium text-muted-foreground">集合地點</label>
+          <input
+            name="meeting_location"
+            defaultValue={day.meeting_location || ''}
+            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            placeholder="例如：飯店大廳"
+          />
+        </div>
+
+        <div>
           <label className="block text-sm font-medium text-muted-foreground">晨喚時間</label>
           <input
             name="morning_call_time"
