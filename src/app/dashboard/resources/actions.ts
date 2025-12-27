@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 
 export async function createHotel(prevState: any, formData: FormData) {
@@ -24,14 +23,9 @@ export async function createHotel(prevState: any, formData: FormData) {
     return { error: '飯店名稱為必填' }
   }
 
-  // Use Service Role to bypass RLS for insert
-  // This is safe because we verified the user above
-  const supabaseAdmin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // Fallback if key missing (though likely to fail RLS again if so)
-  )
-
-  const { error } = await supabaseAdmin.from('hotels').insert({
+  // Use the authenticated client to perform the insert
+  // RLS policies should allow authenticated users to create their own resources
+  const { error } = await supabase.from('hotels').insert({
     admin_id: user.id,
     name,
     address,
